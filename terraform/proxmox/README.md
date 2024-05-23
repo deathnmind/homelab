@@ -1,6 +1,6 @@
 # Proxmox terraform examples
 
-- Using the `count` to create multiple VMs works - except its too fast and there is often a resource lock conflict.  Its better to define the VMs one by one in a one file.
+- Using the `count` to create multiple VMs works - except its too fast and there is often a resource lock conflict.  Its better to define the VMs one by one in  one file.
 - Rename either `count_main.tf` or `multiple_man.tf` to `main.tf` to use it.
 - Enter the variables for the proxmox server into `credentials.auto.tfvars`
 - The permission for the role on proxmox need to be:
