@@ -1,0 +1,46 @@
+---
+- name: Overwrite 50unttended-upgrades with local copy
+  hosts: "{{ variable_host | default('ubuntu') }}"
+  become: true
+  tasks:
+    - name: Test if 50unattended-upgrades exists
+      ansible.builtin.stat:
+        path: /etc/apt/apt.conf.d/50unattended-upgrades
+      register: doesExist
+
+    - name: Does exist message
+      ansible.builtin.debug:
+        msg: "50unttended-upgrades exists"
+      when: doesExist.stat.exists and doesExist.stat.isreg
+
+    - name: Copy 50unattended_upgrades
+      ansible.builtin.copy:
+        src: ./templates/50unattended-upgrades
+        dest: /etc/apt/apt.conf.d/50unattended-upgrades
+        owner: root
+        group: root
+        mode: '0644'
+      when: doesExist.stat.exists and doesExist.stat.isreg
+
+- name: Overwrite needrestart.conf with local copy
+  hosts: "{{ variable_host | default('ubuntu') }}"
+  become: true
+  tasks:
+    - name: Test if needrestart.conf exists
+      ansible.builtin.stat:
+        path: /etc/needrestart/needrestart.conf
+      register: doesExist
+
+    - name: Does exist message
+      ansible.builtin.debug:
+        msg: "needrestart.conf exists"
+      when: doesExist.stat.exists and doesExist.stat.isreg
+
+    - name: Copy needrestart.conf
+      ansible.builtin.copy:
+        src: ./templates/needrestart.conf
+        dest: /etc/needrestart/needrestart.conf
+        owner: root
+        group: root
+        mode: '0644'
+      when: doesExist.stat.exists and doesExist.stat.isreg

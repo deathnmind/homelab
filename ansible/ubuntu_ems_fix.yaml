@@ -1,0 +1,55 @@
+---
+- name: Modify apt_check.py and update motd
+  hosts: "{{ variable_host | default('ubuntu') }}"
+  become: yes
+
+  tasks:
+    - name: Check if apt_check.py exists
+      stat:
+        path: /usr/lib/update-notifier/apt_check.py
+      register: apt_check
+
+    - name: Backup apt_check.py
+      command:
+        cmd: cp /usr/lib/update-notifier/apt_check.py /usr/lib/update-notifier/apt_check.py.bak
+      when: apt_check.stat.exists
+
+    - name: Run sed command to modify apt_check.py
+      become: yes
+      command:
+        cmd: sed -Ezi.orig -e 's/(def _output_esm_service_status.outstream, have_esm_service, service_type.:\n)/\1    return\n/' /usr/lib/update-notifier/apt_check.py
+      when: apt_check.stat.exists
+
+    - name: Run sed command to modify apt_check.py
+      become: yes
+      command:
+        cmd: sed -Ezi.orig -e 's/(def _output_esm_package_alert.*?\n.*?\n.:\n)/\1    return\n/' /usr/lib/update-notifier/apt_check.py
+      when: apt_check.stat.exists 
+
+    - name: Force update motd
+      command: 
+        cmd: /usr/lib/update-notifier/update-motd-updates-available --force
+      when: apt_check.stat.exists
+
+- name: Overwrite ESM sources with local copy
+  hosts: "{{ variable_host | default('ubuntu') }}"
+  become: true
+  tasks:
+    - name: Test if ubuntu-esm-apps.list exists
+      ansible.builtin.stat:
+        path: /var/lib/ubuntu-advantage/apt-esm/etc/apt/sources.list.d/ubuntu-esm-apps.list
+      register: doesExist
+
+    - name: Does exist message
+      ansible.builtin.debug:
+        msg: "ubuntu-esm-apps.list exists"
+      when: doesExist.stat.exists and doesExist.stat.isreg
+
+    - name: Copy ubuntu-esm-apps.list
+      ansible.builtin.copy:
+        src: ./templates/ubuntu-esm-apps.list
+        dest: /var/lib/ubuntu-advantage/apt-esm/etc/apt/sources.list.d/ubuntu-esm-apps.list
+        owner: root
+        group: root
+        mode: '0644'
+      when: doesExist.stat.exists and doesExist.stat.isreg
