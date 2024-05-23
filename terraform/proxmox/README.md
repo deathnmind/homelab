@@ -17,3 +17,21 @@ pveum aclmod / -user terraform-prov@pve -role TerraformProv
 ```
 
 - Once the role and user are created goto proxmox GUI and create the access token for the account.
+
+## Single Folder
+- Count can either be left or removed and it will create a VM based on itteration number.
+- If the count is a high number there are often resource lock conflicts.
+
+## Multiple Folders
+- This divideds the VMs into modules and creates them one by one.  This is the best way to create multiple VMs.
+- `main.tf` is edited to set the VM names and ip addresses.
+- Apply an individual module with the command: `terraform apply -target=module.test1 -auto-approve`
+
+```bash
+#!/bin/bash
+terraform apply -target=module.test1 -auto-approve
+terraform apply -target=module.test2 -auto-approve
+terraform apply -target=module.test3 -auto-approve
+terraform apply -target=module.test4 -auto-approve
+terraform apply -target=module.test5 -auto-approve
+```
