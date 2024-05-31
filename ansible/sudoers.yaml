@@ -1,0 +1,37 @@
+- name: Set sudoers file add permissions for ansible group
+  hosts: "{{ variable_host | default('ubuntu') }}"
+  become: true
+  tasks:
+  - name: Ensure group ansible exists
+    ansible.builtin.group:
+      name: ansible
+      state: present
+  - name: Add the ansible user with the group ansible
+    ansible.builtin.user:
+      name: ansible
+      groups: ansible
+      append: true
+      state: present
+  - name: Create .ssh directory for ansible user
+    ansible.builtin.file:
+      path: /home/ansible/.ssh
+      state: directory
+      mode: '0700'
+      owner: ansible
+      group: ansible
+  - name: Add public key to authorized_keys for ansible user
+    ansible.builtin.copy:
+      dest: /home/ansible/.ssh/authorized_keys
+      content: 'ssh-rsa AAAA.....'
+      owner: ansible
+      group: ansible
+      mode: '0600'
+  - name: Add the ansible group to the sudoers file
+    community.general.sudoers:
+      name: ansible-updates
+      state: present
+      group: ansible
+      commands: 
+        - /usr/bin/apt
+        - /usr/sbin/reboot
+      nopassword: true
